@@ -1,0 +1,306 @@
+/* Time-Lock Puzzle — Crypto Lab demo styles.
+   Dark is the default; the [data-theme="light"] block overrides the palette.
+   The visible theme toggle is owned by the shared header (added by the Parts 0 +
+   A–E standardization pass); this sheet only honours the data-theme contract.
+   Accent = amber #ffb84d (the time/hourglass slot in the catalog palette). */
+
+:root {
+  --accent: #ffb84d;
+  /* Text-safe accent. On dark, the bright amber already clears AA; on light it
+     is overridden below with a darker amber so accent-coloured TEXT stays >=4.5:1. */
+  --accent-strong: #ffb84d;
+
+  --bg: #0f1117;
+  --bg-2: #161b27;
+  --panel: #1a2030;
+  --panel-2: #232c40;
+  --border: #2a3550;
+  --border-2: #3a4a6b;
+
+  --text: #e6eaf4;
+  --text-2: #a0aec0;
+  --text-3: #8b99b5;
+
+  --valid: #22c55e;
+  --valid-bg: #052e16;
+  --valid-text: #4ade80;
+  --invalid: #ef4444;
+  --invalid-bg: #2d0a0a;
+  --invalid-text: #f87171;
+  --probing: var(--accent);
+  --probing-bg: #2a1c00;
+  --probing-text: #ffcd75;
+  --trapdoor: #a855f7;
+  --trapdoor-bg: #1a0a2e;
+  --trapdoor-text: #c084fc;
+
+  --code-bg: #0b0e15;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --tap-min: 44px;
+
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+}
+
+:root[data-theme='light'] {
+  --bg: #eef2fb;
+  --bg-2: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #f3f6fd;
+  --border: #d3dcef;
+  --border-2: #b9c6e4;
+
+  --text: #16203a;
+  --text-2: #46557a;
+  --text-3: #65749a;
+
+  --valid-bg: #e8f8ee;
+  --valid-text: #15803d;
+  --invalid-bg: #fdeaea;
+  --invalid-text: #b91c1c;
+  --probing-bg: #fff4df;
+  --probing-text: #9a5b00;
+  --trapdoor-bg: #f4ecff;
+  --trapdoor-text: #7c3aed;
+
+  --code-bg: #f3f6fd;
+  /* Keep the brand accent readable on light surfaces while still amber. */
+  --accent: #d98a00;
+  /* Darker amber for accent-coloured TEXT on light backgrounds (AA: ~5:1). */
+  --accent-strong: #8a5200;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app { max-width: 920px; margin: 0 auto; padding: clamp(1rem, 3vw, 2.5rem); }
+
+/* ---------- hero ---------- */
+.hero { text-align: center; margin-bottom: 2rem; }
+.hero .kicker {
+  font-family: var(--font-mono);
+  color: var(--accent-strong);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+.hero h1 { font-size: clamp(1.7rem, 5vw, 2.6rem); margin: 0.3rem 0 0.5rem; }
+.hero p { color: var(--text-2); max-width: 60ch; margin: 0 auto; }
+
+/* ---------- tabs ---------- */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  padding-top: 0.5rem;
+  z-index: 5;
+}
+.tab {
+  appearance: none;
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.6rem 0.95rem;
+  min-height: var(--tap-min);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  cursor: pointer;
+}
+.tab:hover { color: var(--text); background: var(--panel); }
+.tab[aria-selected='true'] {
+  color: var(--accent-strong);
+  border-color: var(--border);
+  background: var(--panel);
+  box-shadow: inset 0 2px 0 var(--accent);
+}
+.tab:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.panel { display: none; animation: fade 0.2s ease; }
+.panel[data-active='true'] { display: block; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- cards ---------- */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: clamp(1rem, 3vw, 1.6rem);
+  margin-bottom: 1.2rem;
+}
+.card h2 { margin-top: 0; font-size: 1.25rem; }
+.card h3 { font-size: 1.02rem; margin-bottom: 0.4rem; }
+.muted { color: var(--text-2); }
+.small { font-size: 0.85rem; }
+a { color: var(--accent-strong); }
+
+.analogy {
+  border-left: 3px solid var(--accent);
+  background: var(--panel-2);
+  padding: 0.8rem 1rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin: 1rem 0;
+}
+
+.note {
+  font-size: 0.85rem;
+  color: var(--text-3);
+  border: 1px dashed var(--border-2);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.7rem;
+  margin-top: 0.8rem;
+}
+
+/* ---------- form controls ---------- */
+label { display: block; font-weight: 600; margin: 0.9rem 0 0.35rem; }
+textarea, input[type='text'], input[type='number'], select {
+  width: 100%;
+  background: var(--code-bg);
+  color: var(--text);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+}
+textarea { min-height: 4.5rem; resize: vertical; font-family: var(--font-sans); }
+input:focus, textarea:focus, select:focus {
+  outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent);
+}
+.row { display: flex; gap: 1rem; flex-wrap: wrap; }
+.row > .col { flex: 1 1 220px; }
+
+button.action {
+  appearance: none;
+  font: inherit;
+  font-weight: 700;
+  min-height: var(--tap-min);
+  padding: 0.65rem 1.2rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--text);
+  cursor: pointer;
+  margin: 1rem 0.4rem 0 0;
+}
+button.action:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 34%, transparent); }
+button.action:disabled { opacity: 0.45; cursor: not-allowed; }
+button.action:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+button.ghost { border-color: var(--border-2); background: transparent; color: var(--text-2); }
+button.danger { border-color: var(--invalid); background: color-mix(in srgb, var(--invalid) 16%, transparent); }
+button.trapdoor { border-color: var(--trapdoor); background: color-mix(in srgb, var(--trapdoor) 16%, transparent); }
+
+/* ---------- key/value param display ---------- */
+.params { display: grid; gap: 0.5rem; margin-top: 0.8rem; }
+.param {
+  display: grid;
+  grid-template-columns: 7rem 1fr auto;
+  gap: 0.6rem;
+  align-items: center;
+}
+.param .k { color: var(--text-3); font-family: var(--font-mono); font-size: 0.85rem; }
+.mono-box {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.6rem;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.copy {
+  font: inherit; font-size: 0.75rem; cursor: pointer;
+  background: var(--panel-2); color: var(--text-2);
+  border: 1px solid var(--border-2); border-radius: var(--radius-sm);
+  padding: 0.3rem 0.55rem; min-height: 2rem;
+}
+.copy:hover { color: var(--text); }
+
+/* ---------- solving progress ---------- */
+.progress-track {
+  height: 16px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  margin: 0.8rem 0 0.4rem;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 60%, transparent), var(--accent));
+  transition: width 0.12s linear;
+}
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.7rem; margin-top: 0.8rem; }
+.stat { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; }
+.stat .v { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; }
+.stat .l { font-size: 0.72rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.chain { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-2); margin-top: 0.6rem; }
+.chain .cur { color: var(--accent); }
+
+/* ---------- status banner (icon + text + color, never colour alone) ---------- */
+.status { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1rem; border-radius: var(--radius-md); margin-top: 1rem; font-weight: 600; }
+.status .ico { font-size: 1.2rem; }
+.status.is-idle { background: var(--panel-2); color: var(--text-2); border: 1px solid var(--border); }
+.status.is-working { background: var(--probing-bg); color: var(--probing-text); border: 1px solid var(--probing); }
+.status.is-ok { background: var(--valid-bg); color: var(--valid-text); border: 1px solid var(--valid); }
+.status.is-fail { background: var(--invalid-bg); color: var(--invalid-text); border: 1px solid var(--invalid); }
+.status.is-trapdoor { background: var(--trapdoor-bg); color: var(--trapdoor-text); border: 1px solid var(--trapdoor); }
+
+.reveal {
+  margin-top: 0.8rem; padding: 0.8rem 1rem; border-radius: var(--radius-md);
+  background: var(--valid-bg); border: 1px solid var(--valid);
+  color: var(--valid-text); font-family: var(--font-mono); word-break: break-word;
+}
+.reveal.trap { background: var(--trapdoor-bg); border-color: var(--trapdoor); color: var(--trapdoor-text); }
+
+ul.spaced li { margin-bottom: 0.5rem; }
+.pill {
+  display: inline-block; font-family: var(--font-mono); font-size: 0.72rem;
+  padding: 0.15rem 0.5rem; border-radius: 99px; border: 1px solid var(--border-2);
+  color: var(--text-2); margin: 0 0.3rem 0.3rem 0;
+}
+
+@media (max-width: 640px) {
+  .param { grid-template-columns: 1fr; }
+  .param .k { margin-top: 0.3rem; }
+  .row > .col { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel { animation: none; }
+  .progress-fill { transition: none; }
+}
+
+/* Any other focusable element gets a visible ring (WCAG 2.4.7). */
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Windows High Contrast / forced colors: don't rely on background tints —
+   keep borders and focus rings drawn with system colors so state stays legible.
+   Status meaning still survives because every banner pairs icon + text. */
+@media (forced-colors: active) {
+  .card, .status, .stat, .mono-box, .progress-track, .reveal,
+  button.action, .copy, .tab[aria-selected='true'] {
+    border: 1px solid CanvasText;
+  }
+  .progress-fill { background: Highlight; }
+  :focus-visible { outline: 3px solid Highlight; }
+}

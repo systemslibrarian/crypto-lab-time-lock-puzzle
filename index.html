@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Time-Lock Puzzles — crypto-lab</title>
+    <meta
+      name="description"
+      content="Interactive Rivest–Shamir–Wagner time-lock puzzle: seal a message behind sequential squaring (a^(2^t) mod N) that no amount of parallelism can shortcut."
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏳</text></svg>"
+    />
+  </head>
+  <body>
+    <main id="app">
+      <header class="hero">
+        <div class="kicker">Crypto Lab · Time-Based Cryptography</div>
+        <h1>Time-Lock Puzzles</h1>
+        <p>
+          Seal a secret that <em>anyone</em> can open — but only after a fixed amount of
+          <strong>sequential</strong> computation that no number of extra machines can speed up.
+        </p>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Demo sections">
+        <button class="tab" role="tab" id="tab-learn" aria-controls="panel-learn" aria-selected="true">1 · What it is</button>
+        <button class="tab" role="tab" id="tab-create" aria-controls="panel-create" aria-selected="false">2 · Create</button>
+        <button class="tab" role="tab" id="tab-solve" aria-controls="panel-solve" aria-selected="false">3 · Solve</button>
+        <button class="tab" role="tab" id="tab-security" aria-controls="panel-security" aria-selected="false">4 · Security</button>
+        <button class="tab" role="tab" id="tab-apps" aria-controls="panel-apps" aria-selected="false">5 · Applications</button>
+        <button class="tab" role="tab" id="tab-vdf" aria-controls="panel-vdf" aria-selected="false">6 · VDFs</button>
+      </nav>
+
+      <!-- 1 · WHAT IT IS -->
+      <section class="panel" id="panel-learn" role="tabpanel" aria-labelledby="tab-learn" tabindex="0" data-active="true">
+        <div class="card">
+          <h2>What is a time-lock puzzle?</h2>
+          <p>
+            A <strong>time-lock puzzle</strong> encrypts a message so that decrypting it requires a
+            predictable amount of <strong>sequential</strong> work. There is no secret key to share:
+            anyone can eventually open it, but not before doing the work — and the work cannot be
+            meaningfully parallelised. It is, in effect, “send a message into the future.”
+          </p>
+
+          <div class="analogy">
+            🔒 <strong>Analogy.</strong> Imagine a combination lock you can only open by turning the
+            dial one notch at a time, where each notch’s position depends on the last. A thousand
+            friends can’t turn it faster than one person — the turns must happen in order. The number
+            of notches sets exactly how long it takes.
+          </div>
+
+          <h3>How is this different from ordinary encryption?</h3>
+          <ul class="spaced">
+            <li><strong>Ordinary encryption:</strong> without the key you (practically) <em>never</em> open it; with the key it’s instant. Security rests on a secret.</li>
+            <li><strong>Time-lock puzzle:</strong> there’s no shared key — <em>everyone</em> opens it eventually. Security rests on <em>elapsed sequential time</em>, which you tune by choosing the number of steps.</li>
+          </ul>
+
+          <h3>The construction used here (RSW, 1996)</h3>
+          <p class="small muted">
+            Rivest, Shamir &amp; Wagner. We pick a modulus <code>N = p·q</code> and a base <code>a</code>.
+            The answer is <code>b = a^(2^t) mod N</code>. To get <code>b</code> you must square
+            <code>t</code> times <em>in sequence</em>:
+          </p>
+          <div class="mono-box">x₀ = a  →  x₁ = x₀² mod N  →  x₂ = x₁² mod N  →  …  →  xₜ = a^(2^t) mod N = b</div>
+          <p class="small muted" style="margin-top:0.6rem">
+            Each step needs the previous step’s output, so the work is inherently serial. The message
+            is then sealed with real <strong>AES-256-GCM</strong> under <code>SHA-256(b)</code>.
+            Everything runs in your browser with JavaScript <code>BigInt</code> and WebCrypto — no
+            backend, no faked math.
+          </p>
+        </div>
+      </section>
+
+      <!-- 2 · CREATE -->
+      <section class="panel" id="panel-create" role="tabpanel" aria-labelledby="tab-create">
+        <div class="card">
+          <h2>Create a time-lock puzzle</h2>
+          <p class="muted small">
+            Type a secret, choose how much sequential work is required to open it, and generate the
+            puzzle. You get back <em>public parameters</em> that anyone can use to solve it — while the
+            factorisation of <code>N</code> stays your private trapdoor.
+          </p>
+
+          <label for="secret">Secret message</label>
+          <textarea id="secret" maxlength="2000" placeholder="e.g. The auction reserve is $4,200.">Meet me at the old library at noon.</textarea>
+
+          <div class="row">
+            <div class="col">
+              <label for="difficulty">Difficulty (sequential squarings, t)</label>
+              <select id="difficulty">
+                <option value="50000">Quick · 50,000 steps</option>
+                <option value="250000" selected>Standard · 250,000 steps</option>
+                <option value="1000000">Hard · 1,000,000 steps</option>
+                <option value="custom">Custom…</option>
+              </select>
+              <input id="customT" type="number" min="0" step="1000" value="250000" style="display:none;margin-top:0.5rem" aria-label="Custom number of squarings" />
+            </div>
+            <div class="col">
+              <label for="modbits">Modulus size (security)</label>
+              <select id="modbits">
+                <option value="256">512-bit N (fast demo)</option>
+                <option value="512" selected>1024-bit N (balanced)</option>
+                <option value="1024">2048-bit N (realistic)</option>
+              </select>
+              <p class="note" id="etaNote">Estimated solve time appears after the device is calibrated.</p>
+            </div>
+          </div>
+
+          <button class="action" id="createBtn">Create time-lock puzzle</button>
+          <button class="action ghost" id="loadSampleBtn" type="button">Use a sample</button>
+
+          <div class="status is-idle" id="createStatus" role="status" aria-live="polite">
+            <span class="ico">⏳</span><span>No puzzle yet. Fill in a secret and create one.</span>
+          </div>
+
+          <div id="createOut" style="display:none">
+            <h3 style="margin-top:1.4rem">Public parameters — safe to share</h3>
+            <p class="small muted">This is exactly what a solver receives. It contains no secret key and no factorisation.</p>
+            <div class="params" id="pubParams"></div>
+            <button class="action ghost" id="copyJsonBtn" type="button">Copy puzzle as JSON</button>
+            <button class="action" id="goSolveBtn" type="button">Go solve it →</button>
+            <p class="note">
+              🔑 <strong>Kept private (trapdoor):</strong> the primes <code>p, q</code> and
+              <code>φ(N)=(p−1)(q−1)</code>, generated in memory for this session and never exported.
+              They let <em>you</em> open the puzzle instantly — see the Solve tab’s “creator shortcut”.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 · SOLVE -->
+      <section class="panel" id="panel-solve" role="tabpanel" aria-labelledby="tab-solve">
+        <div class="card">
+          <h2>Solve the puzzle</h2>
+          <p class="muted small">
+            Solving means doing the full <code>t</code> squarings in order. Watch the work accumulate —
+            and note that opening another browser tab to “help” would not finish it any sooner.
+          </p>
+
+          <label for="puzzleJson">Puzzle (auto-filled from the Create tab, or paste public parameters)</label>
+          <textarea id="puzzleJson" spellcheck="false" placeholder='{"n":"…","a":"…","t":250000,"ciphertext":"…","iv":"…","modulusBits":1024}'></textarea>
+          <button class="action ghost" id="loadJsonBtn" type="button">Load this puzzle</button>
+
+          <div class="params" id="solveParams" style="margin-top:1rem"></div>
+
+          <div style="margin-top:1rem">
+            <button class="action" id="solveBtn" disabled>▶ Start solving (sequential work)</button>
+            <button class="action ghost" id="stopBtn" disabled>■ Stop</button>
+            <button class="action danger" id="cheatBtn" disabled title="Attempt to open with only part of the work done">⚡ Try to skip the work</button>
+            <button class="action trapdoor" id="trapdoorBtn" disabled title="Available only to the creator who holds φ(N)">🔓 Creator shortcut (trapdoor)</button>
+          </div>
+
+          <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="stats">
+            <div class="stat"><div class="v" id="statSteps">0</div><div class="l">Steps done</div></div>
+            <div class="stat"><div class="v" id="statPct">0%</div><div class="l">Progress</div></div>
+            <div class="stat"><div class="v" id="statRate">—</div><div class="l">Squarings / sec</div></div>
+            <div class="stat"><div class="v" id="statEta">—</div><div class="l">Est. remaining</div></div>
+          </div>
+          <div class="chain" id="chain" aria-hidden="true"></div>
+
+          <div class="status is-idle" id="solveStatus" role="status" aria-live="polite">
+            <span class="ico">⏳</span><span>Load a puzzle to begin.</span>
+          </div>
+          <div class="reveal" id="reveal" style="display:none"></div>
+        </div>
+      </section>
+
+      <!-- 4 · SECURITY -->
+      <section class="panel" id="panel-security" role="tabpanel" aria-labelledby="tab-security" tabindex="0">
+        <div class="card">
+          <h2>Security properties</h2>
+
+          <h3>Why parallel machines don’t help</h3>
+          <p>
+            The chain <code>xᵢ₊₁ = xᵢ² mod N</code> is a <strong>dependency chain</strong>: step
+            <code>i+1</code> cannot start until step <code>i</code> finishes. Splitting the work across
+            cores or a data centre gains almost nothing — this is an <em>inherently sequential</em>
+            computation. The delay is set by the slowest single squaring times <code>t</code>, not by
+            how much hardware you can buy. (Faster hardware shortens each step, which is why the demo
+            reports time “on <em>this</em> device”.)
+          </p>
+
+          <h3>The creator’s trapdoor</h3>
+          <p>
+            The creator knows <code>p</code> and <code>q</code>, hence
+            <code>φ(N) = (p−1)(q−1)</code>. By Euler’s theorem they collapse the whole tower into one
+            cheap exponentiation:
+          </p>
+          <div class="mono-box">e = 2^t mod φ(N)   then   b = a^e mod N   ← one fast modPow, not t squarings</div>
+          <p class="small muted" style="margin-top:0.6rem">
+            That asymmetry — slow for everyone, instant for the holder of the factorisation — is the
+            “trapdoor”. Factoring <code>N</code> would let an attacker recover <code>φ(N)</code> too,
+            which is why the modulus must be large enough to resist factoring.
+          </p>
+
+          <h3>What if someone cheats or skips steps?</h3>
+          <p>
+            They can’t. The message is sealed with <strong>AES-GCM</strong> keyed by
+            <code>SHA-256(b)</code>. Any wrong answer — from stopping early, guessing, or tampering
+            with the parameters — produces a wrong key, and GCM’s authentication tag rejects it. There
+            is no partial credit and no garbled-but-readable plaintext: it <strong>fails closed</strong>.
+            Try the “⚡ skip the work” button on the Solve tab to see the rejection.
+          </p>
+          <p class="note">
+            ⚠️ This is an <strong>educational</strong> build. Real deployments use 2048-bit+ moduli,
+            careful base selection, and a trusted setup so that no party secretly knows the
+            factorisation. The math here is real; the parameters are sized for a responsive demo.
+          </p>
+        </div>
+      </section>
+
+      <!-- 5 · APPLICATIONS -->
+      <section class="panel" id="panel-apps" role="tabpanel" aria-labelledby="tab-apps" tabindex="0">
+        <div class="card">
+          <h2>Where time-lock puzzles (and VDFs) are used</h2>
+          <ul class="spaced">
+            <li><strong>Randomness beacons.</strong> Force a delay between when an input is fixed and when the random output is known, so no one can grind the result to their advantage.</li>
+            <li><strong>Sealed-bid auctions.</strong> Bidders submit time-locked bids; none can be opened until after the deadline, removing the need to trust an auctioneer to keep them sealed.</li>
+            <li><strong>Fair multi-party computation &amp; commitments.</strong> Guarantee that committed values become readable only after a set time, preventing early peeking or selective abort.</li>
+            <li><strong>Blockchain delay mechanisms.</strong> Leader election and front-running resistance use enforced delays so an adversary can’t precompute the next step.</li>
+            <li><strong>“Send a message to the future.”</strong> Escrow, dead-man switches, or delayed disclosure where you want openability without trusting a custodian.</li>
+          </ul>
+          <p class="muted small">Each case shares one need: a delay that is <em>predictable</em> and that extra hardware can’t collapse.</p>
+        </div>
+      </section>
+
+      <!-- 6 · VDFs -->
+      <section class="panel" id="panel-vdf" role="tabpanel" aria-labelledby="tab-vdf" tabindex="0">
+        <div class="card">
+          <h2>Connection to Verifiable Delay Functions</h2>
+          <p>
+            A <strong>Verifiable Delay Function (VDF)</strong> is a time-lock puzzle’s close cousin. Both
+            require a fixed amount of sequential work to evaluate. A VDF adds one crucial property:
+            <strong>fast public verifiability</strong>.
+          </p>
+          <ul class="spaced">
+            <li><strong>Time-lock puzzle:</strong> proves nothing on its own — you just learn the answer after doing the work (here, AES-GCM lets the <em>solver</em> confirm their own answer).</li>
+            <li><strong>VDF:</strong> the solver also produces a short <em>proof</em> that anyone can check in milliseconds, without redoing the <code>t</code> steps. “I really did spend the time, and here’s cheap evidence.”</li>
+          </ul>
+          <p>
+            The same RSW squaring chain underlies modern VDFs (e.g. Pietrzak and Wesolowski, 2018),
+            which bolt an efficiently-checkable proof onto <code>a^(2^t) mod N</code>. So this demo is
+            also the engine room of a VDF — minus the proof. A future Crypto Lab demo can build that
+            proof on top of exactly these parameters.
+          </p>
+          <div>
+            <span class="pill">RSW 1996</span><span class="pill">Pietrzak VDF</span><span class="pill">Wesolowski VDF</span><span class="pill">sequential squaring</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
