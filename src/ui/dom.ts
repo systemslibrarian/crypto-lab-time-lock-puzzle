@@ -38,6 +38,8 @@ export function setStatus(el: HTMLElement, kind: StatusKind, icon: string, text:
   const ico = document.createElement('span');
   ico.className = 'ico';
   ico.textContent = icon;
+  ico.setAttribute('aria-hidden', 'true'); // meaning is carried by the text
+
   const span = document.createElement('span');
   span.textContent = text;
   el.append(ico, span);
