@@ -79,6 +79,10 @@ export function renderParam(
   const v = document.createElement('div');
   v.className = 'mono-box';
   v.textContent = display ?? value;
+  // Horizontally scrollable region: keyboard-focusable + labelled (WCAG 2.1.1).
+  v.tabIndex = 0;
+  v.setAttribute('role', 'group');
+  v.setAttribute('aria-label', `${key} value`);
   row.append(k, v, makeCopyButton(() => value));
   container.appendChild(row);
 }

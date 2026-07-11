@@ -64,7 +64,7 @@
             The answer is <code>b = a^(2^t) mod N</code>. To get <code>b</code> you must square
             <code>t</code> times <em>in sequence</em>:
           </p>
-          <div class="mono-box">x₀ = a  →  x₁ = x₀² mod N  →  x₂ = x₁² mod N  →  …  →  xₜ = a^(2^t) mod N = b</div>
+          <div class="mono-box" tabindex="0" role="group" aria-label="Sequential squaring chain">x₀ = a  →  x₁ = x₀² mod N  →  x₂ = x₁² mod N  →  …  →  xₜ = a^(2^t) mod N = b</div>
           <p class="small muted" style="margin-top:0.6rem">
             Each step needs the previous step’s output, so the work is inherently serial. The message
             is then sealed with real <strong>AES-256-GCM</strong> under <code>SHA-256(b)</code>.
@@ -190,7 +190,7 @@
             <code>φ(N) = (p−1)(q−1)</code>. By Euler’s theorem they collapse the whole tower into one
             cheap exponentiation:
           </p>
-          <div class="mono-box">e = 2^t mod φ(N)   then   b = a^e mod N   ← one fast modPow, not t squarings</div>
+          <div class="mono-box" tabindex="0" role="group" aria-label="Trapdoor shortcut formula">e = 2^t mod φ(N)   then   b = a^e mod N   ← one fast modPow, not t squarings</div>
           <p class="small muted" style="margin-top:0.6rem">
             That asymmetry — slow for everyone, instant for the holder of the factorisation — is the
             “trapdoor”. Factoring <code>N</code> would let an attacker recover <code>φ(N)</code> too,
