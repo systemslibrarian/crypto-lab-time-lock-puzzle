@@ -101,16 +101,21 @@ body {
 #app { max-width: 920px; margin: 0 auto; padding: clamp(1rem, 3vw, 2.5rem); }
 
 /* ---------- hero ---------- */
-.hero { text-align: center; margin-bottom: 2rem; }
-.hero .kicker {
-  font-family: var(--font-mono);
-  color: var(--accent-strong);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  font-size: 0.78rem;
-}
-.hero h1 { font-size: clamp(1.7rem, 5vw, 2.6rem); margin: 0.3rem 0 0.5rem; }
-.hero p { color: var(--text-2); max-width: 60ch; margin: 0 auto; }
+/* BEGIN cl-hero standard — managed, keep in sync across fleet */
+/* Theme mapping for this demo: --text-dim -> --text-2 (its muted body text);
+   accent/border use this demo's amber --accent and --border. Both themes pass
+   axe AA: --text-2 (#a0aec0 dark / #46557a light) on --bg clears 4.5:1, and the
+   why-box tint is a low-alpha accent mix over the page background. */
+.cl-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:clamp(1rem,4vw,3rem);flex-wrap:wrap;margin:clamp(1rem,3vw,2rem) 0 1.5rem;}
+.cl-hero-main{flex:1 1 22rem;min-width:min(100%,20rem);}
+.cl-hero-title{margin:0;font-size:clamp(1.6rem,3.8vw,2.7rem);font-weight:700;line-height:1.1;letter-spacing:.01em;}
+.cl-hero-sub{margin:.4rem 0 0;font-size:clamp(.9rem,1.6vw,1.05rem);letter-spacing:.01em;opacity:.85;}
+.cl-hero-desc{margin:.55rem 0 0;font-size:1rem;line-height:1.5;color:var(--text-2);max-width:60ch;}
+.cl-hero-why{flex:0 1 min(40%,26rem);min-width:min(100%,15rem);border:1px solid var(--border);border-radius:10px;padding:.85rem 1.05rem;background:color-mix(in oklab,var(--accent) 6%,transparent);}
+.cl-hero-why-label{display:block;font-size:.68rem;font-weight:700;letter-spacing:.14em;}
+.cl-hero-why-text{margin:.35rem 0 0;font-size:.95rem;line-height:1.5;}
+@media (max-width:640px){.cl-hero{flex-direction:column;}.cl-hero-why{flex-basis:auto;width:100%;}}
+/* END cl-hero standard */
 
 /* ---------- tabs ---------- */
 .tabs {

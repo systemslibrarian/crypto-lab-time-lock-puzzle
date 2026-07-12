@@ -139,13 +139,23 @@
 </script>
 <!-- END crypto-lab shared header -->
     <main id="app">
-      <header class="hero">
-        <div class="kicker">Crypto Lab · Time-Based Cryptography</div>
-        <h1>Time-Lock Puzzles</h1>
-        <p>
-          Seal a secret that <em>anyone</em> can open — but only after a fixed amount of
-          <strong>sequential</strong> computation that no number of extra machines can speed up.
-        </p>
+      <header class="cl-hero">
+        <div class="cl-hero-main">
+          <h1 class="cl-hero-title">Time-Lock Puzzle</h1>
+          <p class="cl-hero-sub">RSW 1996 · sequential squaring b = a^(2^t) mod N</p>
+          <p class="cl-hero-desc">
+            Seal a message, then watch it open only after t repeated modular squarings run
+            strictly in order — with a factorisation trapdoor that lets the creator skip ahead.
+          </p>
+        </div>
+        <aside class="cl-hero-why" aria-label="Why it matters">
+          <span class="cl-hero-why-label">WHY IT MATTERS</span>
+          <p class="cl-hero-why-text">
+            Some delays must hold even against an attacker with a data centre. Because the
+            squaring chain cannot be parallelised, it enforces real elapsed time — the basis
+            for sealed-bid auctions, unbiased randomness beacons, and VDFs.
+          </p>
+        </aside>
       </header>
 
       <nav class="tabs" role="tablist" aria-label="Demo sections">
