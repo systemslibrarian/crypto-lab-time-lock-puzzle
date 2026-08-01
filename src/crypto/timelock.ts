@@ -3,9 +3,13 @@
 // Idea: pick N = p*q. The answer is  b = a^(2^t) mod N.
 //   * SOLVER (no factorization) must compute b by t SEQUENTIAL squarings:
 //       x_0 = a,  x_{i+1} = x_i^2 mod N,  so x_t = a^(2^t) mod N = b.
-//     Each step needs the previous step's output, so the work is inherently
-//     sequential — a thousand machines do not finish meaningfully faster than
-//     one. That is the whole point: a tunable, NON-parallelizable delay.
+//     Each step needs the previous step's output, and no parallel shortcut to
+//     a^(2^t) mod N is known — so a thousand machines are not expected to
+//     finish meaningfully faster than one. That is the whole point: a tunable
+//     delay with no known parallel speed-up. NOTE: this sequentiality is the
+//     RSW *assumption*, not a theorem — nobody has proved repeated squaring
+//     mod N cannot be parallelised; the construction (and every VDF built on
+//     it) rests on that unproven conjecture.
 //   * CREATOR (knows phi(N) = (p-1)(q-1)) takes a shortcut: collapse the tower
 //       e = 2^t mod phi(N)   (Euler)
 //       b = a^e mod N

@@ -4,7 +4,7 @@ An interactive, browser-only demonstration of the **Rivest–Shamir–Wagner (RS
 
 ## 1. What It Is
 
-A **time-lock puzzle** seals a message so that recovering it requires a fixed amount of *sequential* computation — work that cannot be meaningfully parallelised. This demo uses the RSW construction: pick an RSA-style modulus `N = p·q` and a base `a`; the answer is `b = a^(2^t) mod N`, reachable only by squaring `t` times in order (`xᵢ₊₁ = xᵢ² mod N`). The message itself is sealed with real **AES-256-GCM** under `SHA-256(b)`. Unlike ordinary encryption, there is no shared secret key — *anyone* can open it eventually; security comes from elapsed sequential time, tuned by the step count `t`. The factorisation of `N` is a trapdoor that lets the creator (and only the creator) open it instantly.
+A **time-lock puzzle** seals a message so that recovering it requires a fixed amount of *sequential* computation — work with no known parallel speed-up, so more cores buy an attacker almost nothing. (That sequentiality is an *assumption, not a theorem*: nobody has proved that repeated squaring modulo an RSA modulus cannot be parallelised. RSW's sequential-squaring assumption is a conjecture that has held since 1996, and this construction — like every VDF built on it — rests on it.) This demo uses the RSW construction: pick an RSA-style modulus `N = p·q` and a base `a`; the answer is `b = a^(2^t) mod N`, reachable only by squaring `t` times in order (`xᵢ₊₁ = xᵢ² mod N`). The message itself is sealed with real **AES-256-GCM** under `SHA-256(b)`. Unlike ordinary encryption, there is no shared secret key — *anyone* can open it eventually; security comes from elapsed sequential time, tuned by the step count `t`. The factorisation of `N` is a trapdoor that lets the creator (and only the creator) open it instantly.
 
 ## 2. When to Use It
 
@@ -12,13 +12,13 @@ A **time-lock puzzle** seals a message so that recovering it requires a fixed am
 - **Sealed-bid auctions** — bids that cannot be opened before a deadline, with no trusted auctioneer holding the plaintext.
 - **Randomness beacons & commit-reveal** — force a delay between fixing an input and learning the output so no one can grind the result.
 - **As the engine of a Verifiable Delay Function (VDF)** — the same squaring chain underlies Pietrzak/Wesolowski VDFs, which add a fast-to-check proof.
-- **When NOT to use it:** anything needing instant, key-based access control, or a *guaranteed wall-clock* delay — solve time scales with the *speed of one machine*, so faster hardware opens it sooner. Time-lock puzzles bound parallel speed-up, not absolute time.
+- **When NOT to use it:** anything needing instant, key-based access control, or a *guaranteed wall-clock* delay — the delay is one squaring on the *attacker's fastest available hardware* times `t`, so the puzzle opens no sooner than that but faster hardware still opens it sooner than you might have planned for. Time-lock puzzles bound parallel speed-up, not absolute time.
 
 ## 3. Live Demo
 
 **[systemslibrarian.github.io/crypto-lab-time-lock-puzzle](https://systemslibrarian.github.io/crypto-lab-time-lock-puzzle/)**
 
-Type a secret, choose a difficulty (number of sequential squarings `t`) and modulus size, and generate a puzzle. Then solve it: watch the squarings accumulate in a Web Worker with live progress and a per-device time estimate. Contrast three openings — the **honest sequential solve**, a **cheat** that skips the work (rejected by AES-GCM, failing closed), and the **creator's trapdoor** that opens instantly via `φ(N)`. All cryptography runs in your browser with JavaScript `BigInt` + WebCrypto; nothing is sent to a server.
+Type a secret, choose a difficulty (number of sequential squarings `t`) and modulus size — each size is labelled with its security status: 512-bit is **broken** (factorable in hours), 1024-bit is **deprecated** (NIST-disallowed for new use since 2013, and the demo default only because generating 2048-bit primes in-browser is slow), 2048-bit is the current minimum for real use — and generate a puzzle. Then solve it: watch the squarings accumulate in a Web Worker with live progress and a per-device time estimate. Contrast three openings — the **honest sequential solve**, a **cheat** that skips the work (rejected by AES-GCM, failing closed), and the **creator's trapdoor** that opens instantly via `φ(N)`. All cryptography runs in your browser with JavaScript `BigInt` + WebCrypto; nothing is sent to a server.
 
 ## 4. How to Run Locally
 

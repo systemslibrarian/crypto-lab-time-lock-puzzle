@@ -12,7 +12,7 @@
     <title>Time-Lock Puzzles — crypto-lab</title>
     <meta
       name="description"
-      content="Interactive Rivest–Shamir–Wagner time-lock puzzle: seal a message behind sequential squaring (a^(2^t) mod N) that no amount of parallelism can shortcut."
+      content="Interactive Rivest–Shamir–Wagner time-lock puzzle: seal a message behind sequential squaring (a^(2^t) mod N), for which no parallel shortcut is known."
     />
     <link
       rel="icon"
@@ -146,8 +146,8 @@
           <span class="cl-hero-why-label">WHY IT MATTERS</span>
           <p class="cl-hero-why-text">
             Some delays must hold even against an attacker with a data centre. Because the
-            squaring chain cannot be parallelised, it enforces real elapsed time — the basis
-            for sealed-bid auctions, unbiased randomness beacons, and VDFs.
+            squaring chain has no known parallel speed-up, it enforces real elapsed time — the
+            basis for sealed-bid auctions, unbiased randomness beacons, and VDFs.
           </p>
         </aside>
       </header>
@@ -168,8 +168,9 @@
           <p>
             A <strong>time-lock puzzle</strong> encrypts a message so that decrypting it requires a
             predictable amount of <strong>sequential</strong> work. There is no secret key to share:
-            anyone can eventually open it, but not before doing the work — and the work cannot be
-            meaningfully parallelised. It is, in effect, “send a message into the future.”
+            anyone can eventually open it, but not before doing the work — and no known method
+            parallelises that work, so extra machines buy you almost nothing. It is, in effect,
+            “send a message into the future.”
           </p>
 
           <div class="analogy">
@@ -193,7 +194,8 @@
           </p>
           <div class="mono-box" tabindex="0" role="group" aria-label="Sequential squaring chain">x₀ = a  →  x₁ = x₀² mod N  →  x₂ = x₁² mod N  →  …  →  xₜ = a^(2^t) mod N = b</div>
           <p class="small muted" style="margin-top:0.6rem">
-            Each step needs the previous step’s output, so the work is inherently serial. The message
+            Each step needs the previous step’s output, so this route to <code>b</code> is strictly
+            serial — and no faster, parallel route to <code>b</code> is known (see Security). The message
             is then sealed with real <strong>AES-256-GCM</strong> under <code>SHA-256(b)</code>.
             Everything runs in your browser with JavaScript <code>BigInt</code> and WebCrypto — no
             backend, no faked math.
@@ -228,10 +230,17 @@
             <div class="col">
               <label for="modbits">Modulus size (security)</label>
               <select id="modbits">
-                <option value="256">512-bit N (fast demo)</option>
-                <option value="512" selected>1024-bit N (balanced)</option>
-                <option value="1024">2048-bit N (realistic)</option>
+                <option value="256">512-bit N — broken (factorable in hours); demo speed only</option>
+                <option value="512" selected>1024-bit N — deprecated; not for real use</option>
+                <option value="1024">2048-bit N — current minimum for real use</option>
               </select>
+              <p class="note">
+                The default, <strong>1024-bit</strong>, is <strong>deprecated</strong> — NIST has
+                disallowed it for new use since 2013 and it is considered within reach of a
+                well-resourced attacker. It is the default here only because generating a 2048-bit
+                modulus in-browser is slow. Real deployments start at 2048-bit; 512-bit is outright
+                <strong>broken</strong> and is offered only to keep the demo responsive.
+              </p>
               <p class="note" id="etaNote">Estimated solve time appears after the device is calibrated.</p>
             </div>
           </div>
@@ -304,11 +313,20 @@
           <h3>Why parallel machines don’t help</h3>
           <p>
             The chain <code>xᵢ₊₁ = xᵢ² mod N</code> is a <strong>dependency chain</strong>: step
-            <code>i+1</code> cannot start until step <code>i</code> finishes. Splitting the work across
-            cores or a data centre gains almost nothing — this is an <em>inherently sequential</em>
-            computation. The delay is set by the slowest single squaring times <code>t</code>, not by
-            how much hardware you can buy. (Faster hardware shortens each step, which is why the demo
-            reports time “on <em>this</em> device”.)
+            <code>i+1</code> cannot start until step <code>i</code> finishes, and no parallel shortcut
+            to <code>a^(2^t) mod N</code> is known. So an attacker with many cores or a whole data
+            centre gains almost nothing. The delay is set by the time of <em>one</em> squaring on the
+            <strong>fastest hardware the attacker can get</strong>, multiplied by <code>t</code>: the
+            puzzle opens no sooner than that, and a slower machine only takes longer. (Your own device
+            is usually the slower machine, which is why the demo reports time “on <em>this</em>
+            device” — an estimate for you, not the guarantee against an adversary.)
+          </p>
+          <p class="note">
+            <strong>Sequentiality is an assumption, not a theorem.</strong> Nobody has proved that
+            repeated squaring modulo an RSA modulus cannot be parallelised; RSW’s sequential-squaring
+            assumption is a conjecture that has resisted attack since 1996, and this whole construction
+            — along with every VDF built on it — rests on it. The practical claim is the honest one:
+            there is <em>no known</em> parallel speed-up, so more cores buy you almost nothing.
           </p>
 
           <h3>The creator’s trapdoor</h3>
@@ -351,7 +369,7 @@
             <li><strong>Blockchain delay mechanisms.</strong> Leader election and front-running resistance use enforced delays so an adversary can’t precompute the next step.</li>
             <li><strong>“Send a message to the future.”</strong> Escrow, dead-man switches, or delayed disclosure where you want openability without trusting a custodian.</li>
           </ul>
-          <p class="muted small">Each case shares one need: a delay that is <em>predictable</em> and that extra hardware can’t collapse.</p>
+          <p class="muted small">Each case shares one need: a delay that is <em>predictable</em> and that no known amount of extra hardware collapses.</p>
         </div>
       </section>
 

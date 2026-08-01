@@ -36,8 +36,9 @@ function updateEta(): void {
   const secs = selectedT() / rate;
   note.innerHTML =
     `≈ <strong>${formatDuration(secs)}</strong> of sequential work on <em>this</em> device ` +
-    `(~${formatInt(Math.round(rate))} squarings/sec at this modulus size). A faster machine is quicker; ` +
-    `more machines are <em>not</em>.`;
+    `(~${formatInt(Math.round(rate))} squarings/sec at this modulus size). The real delay is one squaring ` +
+    `on the <em>fastest</em> hardware an attacker can get, times t — so faster machines open it sooner, ` +
+    `while more machines are <em>not</em> known to help.`;
 }
 
 function renderPublicParams(): void {
