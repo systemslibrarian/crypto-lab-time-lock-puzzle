@@ -101,7 +101,6 @@ body {
 #app { max-width: 920px; margin: 0 auto; padding: clamp(1rem, 3vw, 2.5rem); }
 
 /* ---------- hero ---------- */
-/* BEGIN cl-hero standard — managed, keep in sync across fleet */
 /* Theme mapping for this demo: --text-dim -> --text-2 (its muted body text);
    accent/border use this demo's amber --accent and --border. Both themes pass
    axe AA: --text-2 (#a0aec0 dark / #46557a light) on --bg clears 4.5:1, and the
@@ -114,8 +113,7 @@ body {
 .cl-hero-why{flex:0 1 min(40%,26rem);min-width:min(100%,15rem);border:1px solid var(--border);border-radius:10px;padding:.85rem 1.05rem;background:color-mix(in oklab,var(--accent) 6%,transparent);}
 .cl-hero-why-label{display:block;font-size:.68rem;font-weight:700;letter-spacing:.14em;}
 .cl-hero-why-text{margin:.35rem 0 0;font-size:.95rem;line-height:1.5;}
-@media (max-width:640px){.cl-hero{flex-direction:column;}.cl-hero-why{flex-basis:auto;width:100%;}}
-/* END cl-hero standard */
+@media (max-width:640px){.cl-hero{flex-direction:column;}.cl-hero-why{flex-basis:auto;width:100%;}.cl-hero-main{flex-basis:auto;min-width:0;}}
 
 /* ---------- tabs ---------- */
 .tabs {
@@ -343,4 +341,14 @@ ul.spaced li { margin-bottom: 0.5rem; }
   }
   .progress-fill { background: Highlight; }
   :focus-visible { outline: 3px solid Highlight; }
+}
+
+/* Page footer landmark */
+.scripture-footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-2);
+  margin-top: 2rem;
 }
