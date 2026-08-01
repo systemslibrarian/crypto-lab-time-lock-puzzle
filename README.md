@@ -33,7 +33,7 @@ Run the test suite with `npm test` (25 tests covering the math, including the lo
 
 ## 5. Part of the Crypto-Lab Suite
 
-> One of 60+ live browser demos at
+> One of 170+ live browser demos at
 > [systemslibrarian.github.io/crypto-lab](https://systemslibrarian.github.io/crypto-lab/)
 > — spanning Atbash (600 BCE) through NIST FIPS 203/204/205 (2024).
 
