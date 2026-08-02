@@ -16,6 +16,9 @@
   --panel-2: #232c40;
   --border: #2a3550;
   --border-2: #3a4a6b;
+  /* Text-entry control boundaries: >= 3:1 vs both the field fill and the
+     surrounding panel (WCAG 1.4.11). Decorative borders keep --border-2. */
+  --border-control: #63779f;
 
   --text: #e6eaf4;
   --text-2: #a0aec0;
@@ -58,6 +61,7 @@
   --panel-2: #f3f6fd;
   --border: #d3dcef;
   --border-2: #b9c6e4;
+  --border-control: #64749a;
 
   --text: #16203a;
   --text-2: #46557a;
@@ -191,7 +195,7 @@ textarea, input[type='text'], input[type='number'], select {
   width: 100%;
   background: var(--code-bg);
   color: var(--text);
-  border: 1px solid var(--border-2);
+  border: 1px solid var(--border-control);
   border-radius: var(--radius-sm);
   padding: 0.6rem 0.7rem;
   font-family: var(--font-mono);
