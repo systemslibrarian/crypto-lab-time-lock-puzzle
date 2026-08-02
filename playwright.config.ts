@@ -12,7 +12,11 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'list' : [['list'], ['html', { open: 'never' }]],
   webServer: {
-    command: 'npm run preview -- --port 4320 --strictPort',
+    // Build before serving. Playwright serves dist/, so without this a run can
+    // test a stale bundle — and a build that FAILS leaves the previous good
+    // bundle in place, so the suite passes green against code that no longer
+    // compiles. That silently invalidates any mutation check.
+    command: 'npm run build && npm run preview -- --port 4320 --strictPort',
     url: 'http://localhost:4320/crypto-lab-time-lock-puzzle/',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
