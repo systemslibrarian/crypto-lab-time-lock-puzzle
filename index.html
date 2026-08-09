@@ -314,7 +314,12 @@
             <div class="stat"><div class="v" id="statRate">—</div><div class="l">Squarings / sec</div></div>
             <div class="stat"><div class="v" id="statEta">—</div><div class="l">Est. remaining</div></div>
           </div>
-          <div class="chain" id="chain" aria-hidden="true"></div>
+          <!-- Not aria-hidden. This line prints the live chain value x_n = <current>, which is
+               real output no other element on the page shows, so hiding it from assistive tech
+               removed information rather than noise — and it also meant neither axe nor the
+               gate's contrast oracle ever measured its ink. It carries no aria-live, so it is
+               read on demand rather than announced on every progress tick. -->
+          <div class="chain" id="chain"></div>
 
           <div class="status is-idle" id="solveStatus" role="status" aria-live="polite">
             <span class="ico" aria-hidden="true">⏳</span><span>Load a puzzle to begin.</span>
