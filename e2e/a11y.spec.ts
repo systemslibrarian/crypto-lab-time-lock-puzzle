@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { boot, driveAllStates, NARROW } from './gate';
+import { boot, driveAllStates, expectBaselineNotStale, NARROW } from './gate';
 
 /**
  * WCAG A/AA regression gate.
@@ -23,6 +23,21 @@ for (const theme of ['dark', 'light'] as const) {
     test.setTimeout(900_000);
     await boot(page, theme);
     await driveAllStates(page, theme);
+
+    // The third ratchet rule — a baselined finding that no longer appears must
+    // be deleted, so the list can only shrink. `expectBaselineNotStale` was
+    // exported from `gate.ts` and imported by nothing, so it had never run.
+    //
+    // Light theme only, which was measured rather than assumed. `nonTextSeen`
+    // is a single flat set with no theme dimension, so the rule only holds
+    // where the drive reaches EVERY baselined selector. The dark drive misses
+    // four — `button#createBtn.action`, `button#goSolveBtn.action`,
+    // `button#solveBtn.action` and `input#customT`, all recorded at 2.77:1 —
+    // because those are the accent-bordered primary controls, which clear 3:1
+    // against the dark surfaces and only fail against the light ones. So the
+    // baseline describes the light drive, and a dark-theme call would report
+    // those four as stale on every run.
+    if (theme === 'light') expectBaselineNotStale();
   });
 
   test(`no WCAG A/AA violations in ${theme} theme at 380px`, async ({ page }) => {
@@ -30,5 +45,7 @@ for (const theme of ['dark', 'light'] as const) {
     await page.setViewportSize(NARROW);
     await boot(page, theme);
     await driveAllStates(page, `${theme} @380px`);
+    // Same reasoning as above; both light configurations reach all 17.
+    if (theme === 'light') expectBaselineNotStale();
   });
 }
