@@ -26,12 +26,6 @@ export const NONTEXT_BASELINE: Record<
   "control-boundary|button#loadSampleBtn.action.ghost": { ratio: 1.71, required: 3.0, unverified: false },
   "control-boundary|button#solveBtn.action": { ratio: 2.77, required: 3.0, unverified: false },
   "control-boundary|button#stopBtn.action.ghost": { ratio: 1.71, required: 3.0, unverified: false },
-  "control-boundary|button#tab-apps.tab": { ratio: 1.0, required: 3.0, unverified: false },
-  "control-boundary|button#tab-create.tab": { ratio: 1.0, required: 3.0, unverified: false },
-  "control-boundary|button#tab-learn.tab": { ratio: 1.0, required: 3.0, unverified: false },
-  "control-boundary|button#tab-security.tab": { ratio: 1.0, required: 3.0, unverified: false },
-  "control-boundary|button#tab-solve.tab": { ratio: 1.0, required: 3.0, unverified: false },
-  "control-boundary|button#tab-vdf.tab": { ratio: 1.0, required: 3.0, unverified: false },
   "control-boundary|button.copy": { ratio: 1.71, required: 3.0, unverified: false },
   "control-boundary|input#customT": { ratio: 2.77, required: 3.0, unverified: false }
 };
