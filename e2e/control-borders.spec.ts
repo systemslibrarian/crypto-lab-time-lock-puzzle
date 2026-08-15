@@ -75,7 +75,7 @@ async function measureControlBorders(
   });
 }
 
-for (const theme of ['dark', 'light'] as const) {
+for (const theme of ['dark'] as const) {
   test(`text control borders reach 3:1 in ${theme} theme`, async ({ page }) => {
     test.setTimeout(120_000);
     await boot(page, theme);

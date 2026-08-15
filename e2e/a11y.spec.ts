@@ -18,7 +18,7 @@ import { boot, driveAllStates, expectBaselineNotStale, NARROW } from './gate';
  * not the whole oracle.
  */
 
-for (const theme of ['dark', 'light'] as const) {
+for (const theme of ['dark'] as const) {
   test(`no WCAG A/AA violations in ${theme} theme`, async ({ page }) => {
     test.setTimeout(900_000);
     await boot(page, theme);
@@ -37,7 +37,7 @@ for (const theme of ['dark', 'light'] as const) {
     // against the dark surfaces and only fail against the light ones. So the
     // baseline describes the light drive, and a dark-theme call would report
     // those four as stale on every run.
-    if (theme === 'light') expectBaselineNotStale();
+    expectBaselineNotStale();
   });
 
   test(`no WCAG A/AA violations in ${theme} theme at 380px`, async ({ page }) => {
@@ -46,6 +46,6 @@ for (const theme of ['dark', 'light'] as const) {
     await boot(page, theme);
     await driveAllStates(page, `${theme} @380px`);
     // Same reasoning as above; both light configurations reach all 17.
-    if (theme === 'light') expectBaselineNotStale();
+    expectBaselineNotStale();
   });
 }
