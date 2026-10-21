@@ -6,6 +6,8 @@ An interactive, browser-only demonstration of the **Rivest–Shamir–Wagner (RS
 
 A **time-lock puzzle** seals a message so that recovering it requires a fixed amount of *sequential* computation — work with no known parallel speed-up, so more cores buy an attacker almost nothing. (That sequentiality is an *assumption, not a theorem*: nobody has proved that repeated squaring modulo an RSA modulus cannot be parallelised. RSW's sequential-squaring assumption is a conjecture that has held since 1996, and this construction — like every VDF built on it — rests on it.) This demo uses the RSW construction: pick an RSA-style modulus `N = p·q` and a base `a`; the answer is `b = a^(2^t) mod N`, reachable only by squaring `t` times in order (`xᵢ₊₁ = xᵢ² mod N`). The message itself is sealed with real **AES-256-GCM** under `SHA-256(b)`. Unlike ordinary encryption, there is no shared secret key — *anyone* can open it eventually; security comes from elapsed sequential time, tuned by the step count `t`. The factorisation of `N` is a trapdoor that lets the creator (and only the creator) open it instantly.
 
+> **Scope.** Not production crypto — a teaching demo. BigInt squaring and WebCrypto AES-GCM are real; the default 1024-bit modulus and this implementation are not a production security claim. Use invented messages. The creator retains a trapdoor, and a measured browser delay is not a guarantee about an attacker's hardware.
+
 ## 2. When to Use It
 
 - **Sending data into the future / delayed disclosure** — escrow or dead-man switches where openability must not depend on trusting a custodian.
