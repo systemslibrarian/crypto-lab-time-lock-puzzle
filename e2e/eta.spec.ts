@@ -56,3 +56,22 @@ test('the ETA scales with t instead of reading "<1s" for everything', async ({ p
     `the largest t still reads sub-second (${readings.join(' | ')})`,
   ).not.toMatch(/<1s/);
 });
+
+test('the VDF comparison points at the lab that has the proof, not a future one', async ({
+  page,
+}) => {
+  // The panel used to end "A future Crypto Lab demo can build that proof on top
+  // of exactly these parameters." crypto-lab-vdf exists and does exactly that
+  // (repeated squaring plus the Wesolowski short proof), so the sentence was
+  // promising something already shipped.
+  await page.goto('.');
+  await page.locator('#tab-vdf').click();
+  const panel = page.locator('#panel-vdf');
+  await expect(panel).toBeVisible();
+  const text = (await panel.innerText()).replace(/\s+/g, ' ');
+  expect(text).not.toContain('A future Crypto Lab demo');
+  expect(text).toContain('That proof exists in this suite');
+  await expect(
+    panel.locator('a[href="https://systemslibrarian.github.io/crypto-lab-vdf/"]'),
+  ).toHaveCount(1);
+});
