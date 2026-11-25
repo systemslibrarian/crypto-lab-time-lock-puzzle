@@ -25,18 +25,18 @@ let worker: Worker | null = null;
 let nextId = 1;
 
 const createPending = new Map<number, { resolve: (v: GeneratedPuzzle) => void; reject: (e: Error) => void }>();
-let activeSolve: {
-  id: number;
+const pendingSolves = new Map<number, {
   onProgress: (p: SolveProgress) => void;
   resolve: (r: SolveResult) => void;
   reject: (e: Error) => void;
-} | null = null;
+}>();
 
 function getWorker(): Worker {
   if (worker) return worker;
   worker = new Worker(new URL('./timelock.worker.ts', import.meta.url), { type: 'module' });
   worker.onmessage = (ev: MessageEvent) => {
     const m = ev.data;
+    const solve = pendingSolves.get(m.id);
     switch (m.type) {
       case 'created': {
         const p = createPending.get(m.id);
@@ -47,13 +47,13 @@ function getWorker(): Worker {
         break;
       }
       case 'progress':
-        if (activeSolve && activeSolve.id === m.id) {
-          activeSolve.onProgress({ done: m.done, total: m.total, current: m.current, stepsPerSec: m.stepsPerSec });
+        if (solve) {
+          solve.onProgress({ done: m.done, total: m.total, current: m.current, stepsPerSec: m.stepsPerSec });
         }
         break;
       case 'solved':
-        if (activeSolve && activeSolve.id === m.id) {
-          activeSolve.resolve({
+        if (solve) {
+          solve.resolve({
             stopped: false,
             ok: m.ok,
             message: m.message,
@@ -62,13 +62,13 @@ function getWorker(): Worker {
             done: m.done,
             elapsedMs: m.elapsedMs,
           });
-          activeSolve = null;
+          pendingSolves.delete(m.id);
         }
         break;
       case 'stopped':
-        if (activeSolve && activeSolve.id === m.id) {
-          activeSolve.resolve({ stopped: true, ok: false, message: null, key: '', keyHex: '', done: m.done, elapsedMs: 0 });
-          activeSolve = null;
+        if (solve) {
+          solve.resolve({ stopped: true, ok: false, message: null, key: '', keyHex: '', done: m.done, elapsedMs: 0 });
+          pendingSolves.delete(m.id);
         }
         break;
       case 'error': {
@@ -77,9 +77,9 @@ function getWorker(): Worker {
         if (p) {
           createPending.delete(m.id);
           p.reject(err);
-        } else if (activeSolve && activeSolve.id === m.id) {
-          activeSolve.reject(err);
-          activeSolve = null;
+        } else if (solve) {
+          solve.reject(err);
+          pendingSolves.delete(m.id);
         }
         break;
       }
@@ -104,9 +104,9 @@ export function startSolve(
   const w = getWorker();
   const id = nextId++;
   const promise = new Promise<SolveResult>((resolve, reject) => {
-    activeSolve = { id, onProgress, resolve, reject };
+    pendingSolves.set(id, { onProgress, resolve, reject });
     w.postMessage({ type: 'solve', id, puzzle });
   });
-  const stop = () => w.postMessage({ type: 'stop' });
+  const stop = () => w.postMessage({ type: 'stop', id });
   return { promise, stop };
 }

@@ -6,14 +6,13 @@ import { setPuzzle, getState } from '../state';
 import { createPuzzleInWorker } from '../worker/client';
 import { randomBits, squareStepBench } from './bench';
 
-function selectedT(): number {
-  const diff = $<HTMLSelectElement>('difficulty').value;
-  if (diff === 'custom') {
-    const v = parseInt($<HTMLInputElement>('customT').value, 10);
-    return Number.isFinite(v) && v >= 0 ? v : 0;
-  }
-  return parseInt(diff, 10);
+function selectedT(): number | null {
+  const difficulty = $<HTMLSelectElement>('difficulty').value;
+  const steps = difficulty === 'custom' ? $<HTMLInputElement>('customT').valueAsNumber : Number(difficulty);
+  return Number.isSafeInteger(steps) && steps >= 0 ? steps : null;
 }
+
+const stepHint = 'Enter a whole number of squarings from 0 to 9007199254740991. Zero creates a puzzle with no delay.';
 
 function primeBits(): number {
   return parseInt($<HTMLSelectElement>('modbits').value, 10);
@@ -32,8 +31,14 @@ function deviceRate(bits: number): number {
 
 function updateEta(): void {
   const note = $('etaNote');
+  const steps = selectedT();
+  $<HTMLInputElement>('customT').setAttribute('aria-invalid', String(steps === null));
+  if (steps === null) {
+    note.textContent = stepHint;
+    return;
+  }
   const rate = deviceRate(primeBits());
-  const secs = selectedT() / rate;
+  const secs = steps / rate;
   note.innerHTML =
     `≈ <strong>${formatDuration(secs)}</strong> of sequential work on <em>this</em> device ` +
     `(~${formatInt(Math.round(rate))} squarings/sec at this modulus size). The real delay is one squaring ` +
@@ -68,18 +73,29 @@ export function initCreatePanel(switchToSolve: () => void): void {
   const status = $('createStatus');
   const out = $('createOut');
 
+  let draft = 0;
+  function editDraft(): void {
+    draft++;
+    createBtn.disabled = false;
+    out.style.display = 'none';
+    setStatus(status, 'idle', '✎', 'Settings changed. Create a puzzle to use these values.');
+  }
+  $('secret').addEventListener('input', editDraft);
   difficulty.addEventListener('change', () => {
+    editDraft();
     customT.style.display = difficulty.value === 'custom' ? 'block' : 'none';
     updateEta();
   });
-  customT.addEventListener('input', updateEta);
+  customT.addEventListener('input', () => { editDraft(); updateEta(); });
   modbits.addEventListener('change', () => {
+    editDraft();
     cachedRate = null;
     updateEta();
   });
 
   $('loadSampleBtn').addEventListener('click', () => {
     $<HTMLTextAreaElement>('secret').value = 'The treasure is buried beneath the third oak. 🗝️';
+    editDraft();
     difficulty.value = '250000';
     customT.style.display = 'none';
     updateEta();
@@ -92,6 +108,12 @@ export function initCreatePanel(switchToSolve: () => void): void {
       return;
     }
     const t = selectedT();
+    if (t === null) {
+      setStatus(status, 'fail', '⚠️', stepHint);
+      customT.focus();
+      return;
+    }
+    const current = ++draft;
     const bits = primeBits();
     createBtn.disabled = true;
     out.style.display = 'none';
@@ -105,6 +127,7 @@ export function initCreatePanel(switchToSolve: () => void): void {
     );
     try {
       const { puzzle, trapdoor, expectedKey } = await createPuzzleInWorker(message, bits, t);
+      if (current !== draft) return;
       setPuzzle(puzzle, trapdoor, expectedKey);
       renderPublicParams();
       out.style.display = 'block';
@@ -112,12 +135,12 @@ export function initCreatePanel(switchToSolve: () => void): void {
         status,
         'ok',
         '✅',
-        `Puzzle created. Solving it honestly takes ≈ ${formatDuration(t / deviceRate(bits))} of sequential work on this device.`,
+        t === 0 ? 'Puzzle created with zero squarings. There is no delay.' : `Puzzle created. Solving it honestly takes ≈ ${formatDuration(t / deviceRate(bits))} of sequential work on this device.`,
       );
     } catch (e) {
-      setStatus(status, 'fail', '✗', `Generation failed: ${String(e)}`);
+      if (current === draft) setStatus(status, 'fail', '✗', `Generation failed: ${String(e)}`);
     } finally {
-      createBtn.disabled = false;
+      if (current === draft) createBtn.disabled = false;
     }
   });
 

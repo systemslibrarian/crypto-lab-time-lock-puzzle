@@ -62,7 +62,7 @@ export function solveSequential(
 }
 
 /**
- * Trapdoor open: compute b = a^(2^t mod phi) mod N in one fast exponentiation.
+ * Trapdoor open: compute e = 2^t mod phi, then b = a^e mod N.
  * Only the creator (who knows phi) can do this. Independent code path from
  * solveSequential — the demo asserts the two agree (see timelock.test.ts).
  */

@@ -75,3 +75,52 @@ test('the VDF comparison points at the lab that has the proof, not a future one'
     panel.locator('a[href="https://systemslibrarian.github.io/crypto-lab-vdf/"]'),
   ).toHaveCount(1);
 });
+
+test('custom work must be a whole count and the result distinguishes an explicit zero', async ({ page }) => {
+  await page.goto('.');
+  await page.locator('#tab-create').click();
+  await page.locator('#difficulty').selectOption('custom');
+  await page.locator('#modbits').selectOption('256');
+  for (const raw of ['', '-2', '1.5', '9007199254740992']) {
+    await page.locator('#customT').fill(raw);
+    await page.locator('#createBtn').click();
+    await expect(page.locator('#createStatus')).toContainText('whole number');
+    await expect(page.locator('#customT')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#puzzleJson')).toHaveValue('');
+  }
+  await page.locator('#customT').fill('0');
+  await page.locator('#createBtn').click();
+  await expect(page.locator('#createStatus')).toContainText('zero squarings');
+  expect(JSON.parse(await page.locator('#puzzleJson').inputValue()).t).toBe(0);
+});
+
+test('loading another puzzle retires the previous message, pending solve and counters', async ({ page }) => {
+  await page.goto('.');
+  await page.locator('#tab-create').click();
+  await page.locator('#difficulty').selectOption('custom');
+  await page.locator('#modbits').selectOption('256');
+  await page.locator('#customT').fill('17');
+  await page.locator('#createBtn').click();
+  await page.locator('#goSolveBtn').click();
+  const input = page.locator('#puzzleJson');
+  const original = await input.inputValue();
+  await page.locator('#solveBtn').click();
+  await expect(page.locator('#reveal')).toContainText('old library at noon');
+  await input.fill('unfinished');
+  await expect(page.locator('#reveal')).toBeEmpty();
+  await expect(page.locator('#solveBtn')).toBeDisabled();
+  await page.locator('#loadJsonBtn').click();
+  await expect(page.locator('#solveStatus')).toContainText('not valid JSON');
+  await expect(page.locator('#solveParams')).toBeEmpty();
+  const parsed = JSON.parse(original);
+  await input.fill(JSON.stringify({ ...parsed, t: 5_000_000, modulusBits: 99 }));
+  await page.locator('#loadJsonBtn').click();
+  await expect(page.locator('#solveParams')).toContainText(BigInt(parsed.n).toString(2).length + '-bit');
+  await page.locator('#solveBtn').click();
+  await expect(page.locator('#statSteps')).not.toHaveText('0');
+  await input.fill(original);
+  await page.locator('#loadJsonBtn').click();
+  await page.locator('#solveBtn').click();
+  await expect(page.locator('#reveal')).toContainText('old library at noon');
+  await expect(page.locator('#statSteps')).toHaveText('17');
+});

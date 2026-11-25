@@ -235,7 +235,7 @@
                 <option value="1000000">Hard · 1,000,000 steps</option>
                 <option value="custom">Custom…</option>
               </select>
-              <input id="customT" type="number" min="0" step="1000" value="250000" style="display:none;margin-top:0.5rem" aria-label="Custom number of squarings" />
+              <input id="customT" type="number" min="0" max="9007199254740991" step="1" aria-describedby="etaNote" value="250000" style="display:none;margin-top:0.5rem" aria-label="Custom number of squarings" />
             </div>
             <div class="col">
               <label for="modbits">Modulus size (security)</label>
@@ -271,7 +271,7 @@
             <p class="note">
               🔑 <strong>Kept private (trapdoor):</strong> the primes <code>p, q</code> and
               <code>φ(N)=(p−1)(q−1)</code>, generated in memory for this session and never exported.
-              They let <em>you</em> open the puzzle instantly — see the Solve tab’s “creator shortcut”.
+              They let <em>you</em> reduce the exponent before opening the puzzle — see the Solve tab’s “creator shortcut”.
             </p>
           </div>
         </div>

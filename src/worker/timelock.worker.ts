@@ -12,9 +12,9 @@ import type { PublicPuzzle } from '../crypto/types';
 type InMsg =
   | { type: 'create'; id: number; message: string; primeBits: number; t: number }
   | { type: 'solve'; id: number; puzzle: PublicPuzzle }
-  | { type: 'stop' };
+  | { type: 'stop'; id: number };
 
-let stopRequested = false;
+let activeSolveId: number | null = null;
 
 const yieldToLoop = () => new Promise<void>((r) => setTimeout(r, 0));
 
@@ -27,7 +27,7 @@ self.onmessage = async (ev: MessageEvent<InMsg>) => {
   const msg = ev.data;
 
   if (msg.type === 'stop') {
-    stopRequested = true;
+    if (activeSolveId === msg.id) activeSolveId = null;
     return;
   }
 
@@ -42,8 +42,8 @@ self.onmessage = async (ev: MessageEvent<InMsg>) => {
   }
 
   if (msg.type === 'solve') {
-    stopRequested = false;
     const { id, puzzle } = msg;
+    activeSolveId = id;
     try {
       const n = BigInt(puzzle.n);
       const t = puzzle.t;
@@ -55,6 +55,10 @@ self.onmessage = async (ev: MessageEvent<InMsg>) => {
       // the yield. Tuned for ~30–60ms of work per chunk on typical hardware.
       const chunk = 4096;
       while (done < t) {
+        if (activeSolveId !== id) {
+          self.postMessage({ type: 'stopped', id, done });
+          return;
+        }
         const target = Math.min(done + chunk, t);
         for (; done < target; done++) x = squareStep(x, n);
 
@@ -69,13 +73,13 @@ self.onmessage = async (ev: MessageEvent<InMsg>) => {
           stepsPerSec,
         });
 
-        if (stopRequested) {
-          self.postMessage({ type: 'stopped', id, done });
-          return;
-        }
         await yieldToLoop();
       }
 
+      if (activeSolveId !== id) {
+        self.postMessage({ type: 'stopped', id, done });
+        return;
+      }
       const elapsedMs = performance.now() - start;
       const open = await tryOpen(puzzle, x);
       self.postMessage({
